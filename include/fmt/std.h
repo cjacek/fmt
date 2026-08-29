@@ -676,7 +676,7 @@ struct formatter<
     }
 #endif  // FMT_USE_RTTI
     out = detail::write_bytes<char>(out, string_view(ex.what()));
-#if FMT_USE_RTTI
+#if FMT_USE_RTTI && FMT_USE_EXCEPTIONS
     // If the exception carries a nested exception (e.g. via
     // std::throw_with_nested), format the whole chain.
     if (auto* nested = dynamic_cast<const std::nested_exception*>(&ex)) {
@@ -691,11 +691,12 @@ struct formatter<
         }
       }
     }
-#endif  // FMT_USE_RTTI
+#endif  // FMT_USE_RTTI && FMT_USE_EXCEPTIONS
     return out;
   }
 };
 
+#if FMT_USE_EXCEPTIONS
 template <> struct formatter<std::exception_ptr> : formatter<std::exception> {
   template <typename FormatContext>
   auto format(const std::exception_ptr& ep, FormatContext& ctx) const
@@ -710,6 +711,7 @@ template <> struct formatter<std::exception_ptr> : formatter<std::exception> {
     }
   }
 };
+#endif  // FMT_USE_EXCEPTIONS
 
 template <int N, typename Char>
 struct formatter<detail::bitint<N>, Char> : formatter<long long, Char> {
